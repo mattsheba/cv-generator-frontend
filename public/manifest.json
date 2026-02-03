@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "CVPro ZM",
+  "name": "CVPro Zambia - Professional ATS Optimized",
+  "description": "Create professional, ATS-optimized CVs with AI-powered suggestions for the Zambian job market",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +21,9 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#667eea",
+  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "categories": ["business", "productivity"],
+  "lang": "en-ZM"
 }

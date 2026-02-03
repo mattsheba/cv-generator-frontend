@@ -1,3 +1,9 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+
+# Sitemap
+Sitemap: https://cvgenerator.zm/sitemap.xml
+
+# Crawl-delay (optional, helps prevent server overload)
+Crawl-delay: 10
