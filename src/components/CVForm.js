@@ -198,6 +198,7 @@ const CVForm = ({ onDataChange, initialData = {} }) => {
               <label>Full Name *</label>
               <input
                 type="text"
+                spellCheck={true}
                 value={formData.personalInfo.fullName}
                 onChange={(e) => handleInputChange('personalInfo', 'fullName', e.target.value)}
                 placeholder="John Mwamba"
@@ -231,6 +232,7 @@ const CVForm = ({ onDataChange, initialData = {} }) => {
                 <label>Profession/Job Title</label>
                 <input
                   type="text"
+                  spellCheck={true}
                   value={formData.personalInfo.profession}
                   onChange={(e) => handleInputChange('personalInfo', 'profession', e.target.value)}
                   placeholder="e.g., Nurse, Software Developer, Teacher"
@@ -252,6 +254,7 @@ const CVForm = ({ onDataChange, initialData = {} }) => {
               <label>Specialization (Optional)</label>
               <input
                 type="text"
+                spellCheck={true}
                 value={formData.personalInfo.specialization}
                 onChange={(e) => handleInputChange('personalInfo', 'specialization', e.target.value)}
                 placeholder="e.g., Pediatric Care, Web Development, Secondary Education"
@@ -261,6 +264,7 @@ const CVForm = ({ onDataChange, initialData = {} }) => {
               <label>Address</label>
               <input
                 type="text"
+                spellCheck={true}
                 value={formData.personalInfo.address}
                 onChange={(e) => handleInputChange('personalInfo', 'address', e.target.value)}
                 placeholder="123 Independence Avenue"
@@ -271,6 +275,7 @@ const CVForm = ({ onDataChange, initialData = {} }) => {
                 <label>City</label>
                 <input
                   type="text"
+                  spellCheck={true}
                   value={formData.personalInfo.city}
                   onChange={(e) => handleInputChange('personalInfo', 'city', e.target.value)}
                   placeholder="Lusaka"
@@ -280,6 +285,7 @@ const CVForm = ({ onDataChange, initialData = {} }) => {
                 <label>Country</label>
                 <input
                   type="text"
+                  spellCheck={true}
                   value={formData.personalInfo.country}
                   onChange={(e) => handleInputChange('personalInfo', 'country', e.target.value)}
                   placeholder="Zambia"
@@ -289,6 +295,7 @@ const CVForm = ({ onDataChange, initialData = {} }) => {
             <div className="form-group">
               <label>Professional Summary</label>
               <textarea
+                spellCheck={true}
                 value={formData.personalInfo.summary}
                 onChange={(e) => handleInputChange('personalInfo', 'summary', e.target.value)}
                 placeholder="Brief summary of your professional background and career goals..."
@@ -389,8 +396,7 @@ const CVForm = ({ onDataChange, initialData = {} }) => {
                   <div className="form-group">
                     <label>Degree *</label>
                     <input
-                      type="text"
-                      value={edu.degree}
+                      type="text"                      spellCheck={true}                      value={edu.degree}
                       onChange={(e) => handleArrayChange('education', index, 'degree', e.target.value)}
                       placeholder="Bachelor of Science"
                       required
@@ -400,6 +406,7 @@ const CVForm = ({ onDataChange, initialData = {} }) => {
                     <label>Field of Study</label>
                     <input
                       type="text"
+                      spellCheck={true}
                       value={edu.field}
                       onChange={(e) => handleArrayChange('education', index, 'field', e.target.value)}
                       placeholder="Computer Science"
@@ -428,6 +435,7 @@ const CVForm = ({ onDataChange, initialData = {} }) => {
                   <label>Location</label>
                   <input
                     type="text"
+                    spellCheck={true}
                     value={edu.location}
                     onChange={(e) => handleArrayChange('education', index, 'location', e.target.value)}
                     placeholder="Lusaka, Zambia"
@@ -495,6 +503,7 @@ const CVForm = ({ onDataChange, initialData = {} }) => {
                   <label>Location</label>
                   <input
                     type="text"
+                    spellCheck={true}
                     value={exp.location}
                     onChange={(e) => handleArrayChange('experience', index, 'location', e.target.value)}
                     placeholder="Lusaka, Zambia"
@@ -503,6 +512,7 @@ const CVForm = ({ onDataChange, initialData = {} }) => {
                 <div className="form-group">
                   <label>Description</label>
                   <textarea
+                    spellCheck={true}
                     value={exp.description}
                     onChange={(e) => handleArrayChange('experience', index, 'description', e.target.value)}
                     placeholder="Describe your responsibilities and achievements..."
@@ -524,6 +534,7 @@ const CVForm = ({ onDataChange, initialData = {} }) => {
                     <div key={respIndex} style={{ display: 'flex', gap: '10px', marginBottom: '8px' }}>
                       <input
                         type="text"
+                        spellCheck={true}
                         value={resp}
                         onChange={(e) => {
                           const newResp = [...exp.responsibilities];
@@ -642,6 +653,7 @@ const CVForm = ({ onDataChange, initialData = {} }) => {
                       <label>Language</label>
                       <input
                         type="text"
+                        spellCheck={true}
                         value={language.name}
                         onChange={(e) => handleArrayChange('languages', index, 'name', e.target.value)}
                         placeholder="e.g., English, Bemba, Nyanja"
@@ -675,6 +687,7 @@ const CVForm = ({ onDataChange, initialData = {} }) => {
               <h3>Hobbies & Interests</h3>
               <div className="form-group">
                 <textarea
+                  spellCheck={true}
                   value={formData.hobbies}
                   onChange={(e) => {
                     const updatedData = { ...formData, hobbies: e.target.value };
