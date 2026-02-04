@@ -139,85 +139,116 @@ const CVGenerator = () => {
     }
 
     setIsProcessing(true);
-    toast.info('Preparing payment...');
 
     try {
-      // Call backend API for payment initiation - using CV form data directly
-      const response = await fetch(`${API_BASE_URL}/api/initiate-payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          phoneNumber: cvData.personalInfo.phone,
-          paymentMethod: 'mtn', // Default, Tumeny will show all options
+      // Generate unique reference for this payment
+      const reference = 'CV-' + Date.now() + '-' + Math.random().toString(36).substring(7);
+      
+      // Store CV data and reference for after payment
+      sessionStorage.setItem('pendingCvData', JSON.stringify(cvData));
+      sessionStorage.setItem('pendingPaymentReference', reference);
+
+      // Initialize Lenco payment widget
+      if (window.LencoPay) {
+        window.LencoPay.getPaid({
+          key: 'pub-cd353f758b26d57cead328816d6e7691b9f0dcea6f5a9f7b', // Lenco public key
+          reference: reference,
+          email: cvData.personalInfo.email,
           amount: 50, // ZMW 50
-          cvData
-        })
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        // Check if using real payment gateway
-        if (result.useGateway && result.paymentUrl) {
-          // Real payment gateway - immediately redirect to Tumeny
-          toast.info('Redirecting to payment gateway...');
-          
-          // Store transaction ID in sessionStorage for when user returns
-          sessionStorage.setItem('pendingTransactionId', result.transactionId);
-          sessionStorage.setItem('pendingPaymentPhone', cvData.personalInfo.phone);
-          
-          // Immediate redirect to payment gateway (same window)
-          setTimeout(() => {
-            window.location.href = result.paymentUrl;
-          }, 500); // Small delay for toast to show
-        } else {
-          // Simulation mode - original polling logic
-          toast.success('Payment initiated! Please check your phone to complete the transaction.');
-          
-          // Clear any existing intervals
-          if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-          }
-          if (pollingTimeoutRef.current) {
-            clearTimeout(pollingTimeoutRef.current);
-          }
-          
-          // Poll for payment status
-          pollingIntervalRef.current = setInterval(async () => {
+          currency: 'ZMW',
+          channels: ['mobile-money'], // Mobile Money only for instant payments
+          customer: {
+            firstName: cvData.personalInfo.fullName.split(' ')[0] || 'Customer',
+            lastName: cvData.personalInfo.fullName.split(' ').slice(1).join(' ') || '',
+            phone: cvData.personalInfo.phone.replace(/\D/g, ''),
+          },
+          onSuccess: async function (response) {
+            // Payment completed successfully
+            toast.success('Payment successful! Generating your CV...');
+            
             try {
-              const statusResponse = await fetch(`${API_BASE_URL}/api/payment-status/${result.transactionId}`);
-              const statusData = await statusResponse.json();
+              // Send CV data to backend for generation
+              const generateResponse = await fetch(`${API_BASE_URL}/api/payment/generate-cv`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  reference: reference,
+                  cvData: cvData
+                })
+              });
 
-              if (statusData.status === 'completed') {
-                clearInterval(pollingIntervalRef.current);
-                clearTimeout(pollingTimeoutRef.current);
-                toast.success('Payment successful! Downloading your CV...');
-                await downloadPDF(statusData.pdfUrl);
+              const generateData = await generateResponse.json();
+
+              if (generateData.success && generateData.pdfUrl) {
+                // Clear session storage
+                sessionStorage.removeItem('pendingCvData');
+                sessionStorage.removeItem('pendingPaymentReference');
+                
+                // Download PDF
+                toast.success('Downloading your CV...');
+                await downloadPDF(generateData.pdfUrl);
                 setIsProcessing(false);
-              } else if (statusData.status === 'failed') {
-                clearInterval(pollingIntervalRef.current);
-                clearTimeout(pollingTimeoutRef.current);
-                toast.error('Payment failed. Please try again.');
+              } else {
+                toast.error('Payment successful but CV generation failed. Please contact support with reference: ' + reference);
                 setIsProcessing(false);
               }
-            } catch (pollError) {
-              console.error('Polling error:', pollError);
-            }
-          }, 3000); // Check every 3 seconds
-
-          // Stop checking after 5 minutes
-          pollingTimeoutRef.current = setTimeout(() => {
-            if (pollingIntervalRef.current) {
-              clearInterval(pollingIntervalRef.current);
-            }
-            if (isProcessing) {
-              toast.error('Payment timeout. Please contact support if you were charged.');
+            } catch (error) {
+              console.error('CV generation error:', error);
+              toast.error('Payment successful but CV generation failed. Please contact support with reference: ' + reference);
               setIsProcessing(false);
             }
-          }, 300000);
-        }
+          },
+          onClose: function () {
+            // User closed payment window
+            toast.warning('Payment window closed. No charge was made.');
+            sessionStorage.removeItem('pendingCvData');
+            sessionStorage.removeItem('pendingPaymentReference');
+            setIsProcessing(false);
+          },
+          onConfirmationPending: function () {
+            // Payment pending confirmation
+            toast.info('Payment is being confirmed. This may take a few moments...');
+            
+            // Poll for payment confirmation
+            const checkPayment = setInterval(async () => {
+              try {
+                const verifyResponse = await fetch(`${API_BASE_URL}/api/payment/verify/${reference}`);
+                const verifyData = await verifyResponse.json();
+
+                if (verifyData.success && verifyData.status === 'successful') {
+                  clearInterval(checkPayment);
+                  sessionStorage.removeItem('pendingCvData');
+                  sessionStorage.removeItem('pendingPaymentReference');
+                  
+                  toast.success('Payment confirmed! Downloading your CV...');
+                  await downloadPDF(verifyData.pdfUrl);
+                  setIsProcessing(false);
+                } else if (verifyData.status === 'failed') {
+                  clearInterval(checkPayment);
+                  toast.error('Payment failed. Please try again.');
+                  setIsProcessing(false);
+                }
+              } catch (error) {
+                console.error('Payment check error:', error);
+              }
+            }, 5000); // Check every 5 seconds
+
+            // Stop checking after 3 minutes
+            setTimeout(() => {
+              clearInterval(checkPayment);
+              if (isProcessing) {
+                toast.warning('Payment confirmation taking longer than expected. Please contact support if charged.');
+                setIsProcessing(false);
+              }
+            }, 180000);
+          },
+        });
+      } else {
+        toast.error('Payment system not loaded. Please refresh the page and try again.');
+        setIsProcessing(false);
+      }
       } else {
         toast.error(result.error || result.message || 'Payment initiation failed. Please try again.');
         setIsProcessing(false);
