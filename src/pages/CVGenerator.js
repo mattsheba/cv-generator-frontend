@@ -249,10 +249,6 @@ const CVGenerator = () => {
         toast.error('Payment system not loaded. Please refresh the page and try again.');
         setIsProcessing(false);
       }
-      } else {
-        toast.error(result.error || result.message || 'Payment initiation failed. Please try again.');
-        setIsProcessing(false);
-      }
     } catch (error) {
       console.error('Payment error:', error);
       toast.error('Network error. Please check your connection and try again.');
